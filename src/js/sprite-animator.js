@@ -91,6 +91,16 @@ export const SPRITE_CONFIGS = {
     CASTLE: { frames: 5, width: 64, height: 64, frameRate: 0.2 },
 
     // Enemy sprites (most are animated sprite sheets)
+    ENEMY_SD: { frames: 6, width: 64, height: 64, frameRate: 0.1 },
+
+    // Soldier sprites
+    SOLDIER_IDLE: { frames: 4, width: 64, height: 64, frameRate: 0.15 },
+    SOLDIER_WALK: { frames: 8, width: 64, height: 64, frameRate: 0.1 },
+    SOLDIER_RUN: { frames: 8, width: 64, height: 64, frameRate: 0.08 },
+    SOLDIER_ATTACK: { frames: 4, width: 64, height: 64, frameRate: 0.1 },
+    SOLDIER_HURT: { frames: 3, width: 64, height: 64, frameRate: 0.1 },
+    SOLDIER_DEAD: { frames: 6, width: 64, height: 64, frameRate: 0.12 },
+
     ENEMY_SLIME: { frames: 4, width: 32, height: 32, frameRate: 0.12 },
     ENEMY_BAT: { frames: 4, width: 32, height: 32, frameRate: 0.08 },
     ENEMY_SKELETON: { frames: 4, width: 32, height: 32, frameRate: 0.1 },
@@ -119,6 +129,10 @@ export function getSpriteConfig(spriteName) {
         'castle_red': 'CASTLE',
 
         // Enemies
+        'sd': 'ENEMY_SD',
+        'soldier_1': 'SOLDIER_WALK',
+        'soldier_2': 'SOLDIER_WALK',
+        'soldier_3': 'SOLDIER_WALK',
         'slime': 'ENEMY_SLIME',
         'bat': 'ENEMY_BAT',
         'skeleton': 'ENEMY_SKELETON',

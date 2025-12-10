@@ -17,8 +17,8 @@ export class AssetLoader {
      */
     getAssetManifest() {
         return {
-            // Player sprites
-            player: {
+            // Player sprites - Pink Monster
+            player_pink: {
                 idle: 'assets/sprites/player/Pink_Monster_Idle_4.png',
                 walk: 'assets/sprites/player/Pink_Monster_Walk_6.png',
                 run: 'assets/sprites/player/Pink_Monster_Run_6.png',
@@ -26,23 +26,66 @@ export class AssetLoader {
                 death: 'assets/sprites/player/Pink_Monster_Death_8.png'
             },
 
+            // Player sprites - Owlet Monster
+            player_owlet: {
+                idle: 'assets/sprites/player/2 Owlet_Monster/Owlet_Monster_Idle_4.png',
+                walk: 'assets/sprites/player/2 Owlet_Monster/Owlet_Monster_Walk_6.png',
+                run: 'assets/sprites/player/2 Owlet_Monster/Owlet_Monster_Run_6.png',
+                hurt: 'assets/sprites/player/2 Owlet_Monster/Owlet_Monster_Hurt_4.png',
+                death: 'assets/sprites/player/2 Owlet_Monster/Owlet_Monster_Death_8.png'
+            },
+
+            // Player sprites - Dude Monster
+            player_dude: {
+                idle: 'assets/sprites/player/3 Dude_Monster/Dude_Monster_Idle_4.png',
+                walk: 'assets/sprites/player/3 Dude_Monster/Dude_Monster_Walk_6.png',
+                run: 'assets/sprites/player/3 Dude_Monster/Dude_Monster_Run_6.png',
+                hurt: 'assets/sprites/player/3 Dude_Monster/Dude_Monster_Hurt_4.png',
+                death: 'assets/sprites/player/3 Dude_Monster/Dude_Monster_Death_8.png'
+            },
+
             // Base sprites
             bases: {
                 castle_green: 'assets/sprites/bases/spr_castle_green.png',
-                castle_red: 'assets/sprites/bases/spr_castle_red.png'
+                castle_red: 'assets/sprites/bases/spr_castle_red.png',
+                // Combat Towers
+                tower_archer: 'assets/sprites/bases/Combat Towers/spr_tower_archer.png',
+                tower_cannon: 'assets/sprites/bases/Combat Towers/spr_tower_cannon.png',
+                tower_crossbow: 'assets/sprites/bases/Combat Towers/spr_tower_crossbow.png',
+                tower_ice_wizard: 'assets/sprites/bases/Combat Towers/spr_tower_ice_wizard.png',
+                tower_lightning: 'assets/sprites/bases/Combat Towers/spr_tower_lightning_tower.png',
+                tower_poison_wizard: 'assets/sprites/bases/Combat Towers/spr_tower_poison_wizard.png'
             },
 
-            // Enemy/NPC sprites
+            // Enemy/NPC sprites - Monster sprites (same style as player)
             enemies: {
-                bat: 'assets/sprites/enemies/spr_bat.png',
-                slime: 'assets/sprites/enemies/spr_normal_slime.png',
-                big_slime: 'assets/sprites/enemies/spr_big_slime.png',
-                king_slime: 'assets/sprites/enemies/spr_king_slime.png',
-                skeleton: 'assets/sprites/enemies/spr_skeleton.png',
-                zombie: 'assets/sprites/enemies/spr_zombie.png',
-                ghost: 'assets/sprites/enemies/spr_ghost.png',
-                demon: 'assets/sprites/enemies/spr_demon.png',
-                goblin: 'assets/sprites/enemies/spr_goblin.png'
+                // Enemy Pink Monster
+                enemy_pink: {
+                    idle: 'assets/sprites/enemies/1 Pink_Monster/Pink_Monster_Idle_4.png',
+                    walk: 'assets/sprites/enemies/1 Pink_Monster/Pink_Monster_Walk_6.png',
+                    run: 'assets/sprites/enemies/1 Pink_Monster/Pink_Monster_Run_6.png',
+                    attack: 'assets/sprites/enemies/1 Pink_Monster/Pink_Monster_Attack1_4.png',
+                    hurt: 'assets/sprites/enemies/1 Pink_Monster/Pink_Monster_Hurt_4.png',
+                    death: 'assets/sprites/enemies/1 Pink_Monster/Pink_Monster_Death_8.png'
+                },
+                // Enemy Owlet Monster
+                enemy_owlet: {
+                    idle: 'assets/sprites/enemies/2 Owlet_Monster/Owlet_Monster_Idle_4.png',
+                    walk: 'assets/sprites/enemies/2 Owlet_Monster/Owlet_Monster_Walk_6.png',
+                    run: 'assets/sprites/enemies/2 Owlet_Monster/Owlet_Monster_Run_6.png',
+                    attack: 'assets/sprites/enemies/2 Owlet_Monster/Owlet_Monster_Attack1_4.png',
+                    hurt: 'assets/sprites/enemies/2 Owlet_Monster/Owlet_Monster_Hurt_4.png',
+                    death: 'assets/sprites/enemies/2 Owlet_Monster/Owlet_Monster_Death_8.png'
+                },
+                // Enemy Dude Monster
+                enemy_dude: {
+                    idle: 'assets/sprites/enemies/3 Dude_Monster/Dude_Monster_Idle_4.png',
+                    walk: 'assets/sprites/enemies/3 Dude_Monster/Dude_Monster_Walk_6.png',
+                    run: 'assets/sprites/enemies/3 Dude_Monster/Dude_Monster_Run_6.png',
+                    attack: 'assets/sprites/enemies/3 Dude_Monster/Dude_Monster_Attack1_4.png',
+                    hurt: 'assets/sprites/enemies/3 Dude_Monster/Dude_Monster_Hurt_4.png',
+                    death: 'assets/sprites/enemies/3 Dude_Monster/Dude_Monster_Death_8.png'
+                }
             },
 
             // Projectile sprites
@@ -218,5 +261,78 @@ export class AssetLoader {
      */
     isComplete() {
         return this.loaded === this.total && this.total > 0;
+    }
+
+    /**
+     * Create sprite sheet dari individual frames
+     * @param {Array<Image>} frames - Array of frame images
+     * @param {Number} frameWidth - Width per frame
+     * @param {Number} frameHeight - Height per frame
+     * @returns {HTMLCanvasElement} Canvas berisi sprite sheet
+     */
+    createSpriteSheet(frames, frameWidth, frameHeight) {
+        if (!frames || frames.length === 0) return null;
+
+        // Create canvas untuk sprite sheet
+        const canvas = document.createElement('canvas');
+        canvas.width = frameWidth * frames.length;
+        canvas.height = frameHeight;
+        const ctx = canvas.getContext('2d');
+
+        // Disable smoothing untuk pixel art
+        ctx.imageSmoothingEnabled = false;
+
+        // Draw semua frames secara horizontal
+        frames.forEach((frame, index) => {
+            if (frame) {
+                ctx.drawImage(
+                    frame,
+                    index * frameWidth, 0,
+                    frameWidth, frameHeight
+                );
+            }
+        });
+
+        return canvas;
+    }
+
+    /**
+     * Create SD enemy sprite sheet dari individual frames
+     */
+    createSDSpriteSheet() {
+        const frames = this.assets.enemies?.sd_frames;
+
+        if (!frames) {
+            console.error('❌ SD frames not found in assets!');
+            return null;
+        }
+
+        const frameArray = [
+            frames.frame1,
+            frames.frame2,
+            frames.frame3,
+            frames.frame4,
+            frames.frame5,
+            frames.frame6
+        ];
+
+        // Check jika ada frames yang null
+        const nullFrames = frameArray.filter(f => !f);
+        if (nullFrames.length > 0) {
+            console.error(`❌ ${nullFrames.length} SD frames failed to load!`);
+            console.log('Loaded frames:', frameArray.map((f, i) => ({ index: i+1, loaded: !!f })));
+        }
+
+        // Tentukan ukuran frame (dari frame pertama yang loaded)
+        const firstLoadedFrame = frameArray.find(f => f);
+        if (firstLoadedFrame) {
+            const frameWidth = firstLoadedFrame.width;
+            const frameHeight = firstLoadedFrame.height;
+            console.log('📐 Frame dimensions:', { frameWidth, frameHeight });
+            return this.createSpriteSheet(frameArray, frameWidth, frameHeight);
+        }
+
+        console.error('❌ No SD frames were loaded!');
+        return null;
     }
 }

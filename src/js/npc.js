@@ -1,9 +1,11 @@
 /**
  * npc.js - NPC Guard Class dengan FSM
  * Finite State Machine: GUARD → CHASE → RETURN
+ * Animation States: idle, walk, shot, dead
  */
 
 import { distance, normalize, angleTo } from './utils.js';
+import { SpriteAnimator } from './sprite-animator.js';
 
 // FSM States
 const STATES = {
@@ -12,11 +14,20 @@ const STATES = {
     RETURN: 'RETURN'
 };
 
+// Animation States
+const ANIM_STATES = {
+    IDLE: 'idle',
+    WALK: 'walk',
+    ATTACK: 'attack',
+    HURT: 'hurt',
+    DEATH: 'death'
+};
+
 export class NPC {
     constructor(x, y, team, baseHome, level = 1) {
         this.x = x;
         this.y = y;
-        this.radius = 16; // Increased from 12 to 16 for better visibility
+        this.radius = 24;
         this.team = team;
 
         // Base home (the base this NPC guards)
@@ -28,11 +39,13 @@ export class NPC {
 
         // FSM State
         this.state = STATES.GUARD;
-        this.target = null; // Current chase target
+        this.target = null;
 
         // Movement
         const baseSpeed = 96 + Math.min(40, (level - 1) * 4);
         this.speed = baseSpeed;
+        this.velocityX = 0;
+        this.velocityY = 0;
 
         // Health (scales with level)
         const baseHp = 100 + (level - 1) * 16;
@@ -42,50 +55,188 @@ export class NPC {
         // Combat
         const baseDamage = 8;
         this.damage = baseDamage;
-        this.range = 200; // Attack range
-        this.fireRate = 0.95; // seconds between shots (slightly faster)
+        this.range = 200;
+        this.fireRate = 0.95;
         this.fireCooldown = 0;
 
         // FSM Parameters
-        this.senseRadius = 170; // Detection radius for player
-        this.leashRadius = 230; // Max distance from base before returning
-        this.stopDistance = 150; // Stop this far from target to shoot
+        this.senseRadius = 170;
+        this.leashRadius = 230;
+        this.stopDistance = 150;
 
-        // Visual - Random sprite based on level
+        // Visual & Animation
         this.sprite = this.chooseSprite(level);
         this.facing = 0;
+        this.facingLeft = false;
+
+        // Animation State System
+        this.animState = ANIM_STATES.IDLE;
+        this.animationTime = 0;
+        this.hitFlashTimer = 0;
+
+        // Multiple animators for different states
+        this.animators = {};
+        this.currentAnimator = null;
+
+        // Death animation
+        this.deathTimer = 0;
+        this.deathDuration = 3.0; // 3 seconds before disappear
+        this.isPlayingDeath = false;
+
+        // Attack animation
+        this.isAttacking = false;
+        this.attackAnimTimer = 0;
+        this.attackAnimDuration = 0.4; // Duration of attack animation
 
         // State
         this.alive = true;
-        this.animationTime = 0;
-        this.hitFlashTimer = 0;
+        this.fullyDead = false; // True when death animation complete and timer done
     }
 
     chooseSprite(level) {
-        // Different enemies appear at different levels
-        const enemyTypes = [
-            'slime',       // Level 1-2
-            'bat',         // Level 2-3
-            'skeleton',    // Level 3-4
-            'zombie',      // Level 4-5
-            'goblin',      // Level 5-6
-            'ghost',       // Level 6+
-            'demon'        // Level 7+
-        ];
+        // Use Monster sprites - randomly choose one of 3 types
+        const monsterTypes = ['enemy_pink', 'enemy_owlet', 'enemy_dude'];
+        return monsterTypes[Math.floor(Math.random() * monsterTypes.length)];
+    }
 
-        const index = Math.min(Math.floor((level - 1) / 2), enemyTypes.length - 1);
-        return enemyTypes[index];
+    /**
+     * Initialize animators untuk semua animation states
+     */
+    initAnimator(sprites) {
+        const isMonster = this.sprite && this.sprite.startsWith('enemy_');
+
+        if (isMonster) {
+            const monsterSprites = sprites[this.sprite];
+            if (!monsterSprites) {
+                console.warn('⚠️ NPC: Monster sprites not found!', this.sprite);
+                return;
+            }
+
+            // Frame counts for each animation (same as player)
+            const animConfigs = {
+                idle: { sheet: monsterSprites.idle, frames: 4, frameRate: 0.15 },
+                walk: { sheet: monsterSprites.walk, frames: 6, frameRate: 0.1 },
+                run: { sheet: monsterSprites.run, frames: 6, frameRate: 0.08 },
+                attack: { sheet: monsterSprites.attack, frames: 4, frameRate: 0.1 },
+                hurt: { sheet: monsterSprites.hurt, frames: 4, frameRate: 0.1 },
+                death: { sheet: monsterSprites.death, frames: 8, frameRate: 0.12, loop: false }
+            };
+
+            // Create animator for each state
+            for (const [state, config] of Object.entries(animConfigs)) {
+                if (config.sheet && config.sheet.width) {
+                    const frameWidth = config.sheet.width / config.frames;
+                    const frameHeight = config.sheet.height;
+
+                    const animator = new SpriteAnimator(
+                        config.sheet,
+                        config.frames,
+                        frameWidth,
+                        frameHeight
+                    );
+                    animator.setFrameRate(config.frameRate);
+                    animator.loop = config.loop !== false;
+
+                    this.animators[state] = animator;
+                }
+            }
+
+            // Set initial animator
+            this.currentAnimator = this.animators.idle || this.animators.walk;
+            this.animState = ANIM_STATES.IDLE;
+        }
+    }
+
+    /**
+     * Change animation state
+     */
+    setAnimState(newState) {
+        if (this.animState === newState) return;
+        if (this.isPlayingDeath) return; // Don't change during death
+
+        this.animState = newState;
+
+        if (this.animators[newState]) {
+            this.currentAnimator = this.animators[newState];
+            this.currentAnimator.reset();
+        }
+    }
+
+    /**
+     * Get current frame index untuk animasi
+     */
+    getCurrentFrame() {
+        if (this.currentAnimator) {
+            return this.currentAnimator.getCurrentFrame();
+        }
+        return 0;
+    }
+
+    /**
+     * Get current animation sprite sheet
+     */
+    getCurrentSpriteSheet() {
+        if (this.currentAnimator) {
+            return this.currentAnimator.spriteSheet;
+        }
+        return null;
+    }
+
+    /**
+     * Get frame dimensions
+     */
+    getFrameDimensions() {
+        if (this.currentAnimator) {
+            return {
+                width: this.currentAnimator.frameWidth,
+                height: this.currentAnimator.frameHeight
+            };
+        }
+        return { width: 64, height: 64 };
     }
 
     update(dt, player, nexus) {
-        if (!this.alive) return;
+        // Handle death animation and timer
+        if (!this.alive) {
+            if (!this.isPlayingDeath) {
+                // Start death animation
+                this.isPlayingDeath = true;
+                this.setAnimState(ANIM_STATES.DEATH);
+                if (this.animators.death) {
+                    this.animators.death.reset();
+                }
+            }
 
-        // Advance animation timer
+            // Update death animator
+            if (this.currentAnimator) {
+                this.currentAnimator.update(dt);
+            }
+
+            // Count down death timer
+            this.deathTimer += dt;
+            if (this.deathTimer >= this.deathDuration) {
+                this.fullyDead = true;
+            }
+            return;
+        }
+
+        // Store previous position
+        const prevX = this.x;
+        const prevY = this.y;
+
+        // Advance timers
         this.animationTime += dt;
         this.hitFlashTimer = Math.max(0, this.hitFlashTimer - dt);
-
-        // Update cooldowns
         this.fireCooldown = Math.max(0, this.fireCooldown - dt);
+
+        // Handle attack animation timer
+        if (this.isAttacking) {
+            this.attackAnimTimer += dt;
+            if (this.attackAnimTimer >= this.attackAnimDuration) {
+                this.isAttacking = false;
+                this.attackAnimTimer = 0;
+            }
+        }
 
         // FSM Logic
         switch (this.state) {
@@ -100,9 +251,34 @@ export class NPC {
                 break;
         }
 
+        // Calculate velocity
+        this.velocityX = (this.x - prevX) / dt;
+        this.velocityY = (this.y - prevY) / dt;
+
         // Update facing direction
+        if (Math.abs(this.velocityX) > 10) {
+            this.facingLeft = this.velocityX < 0;
+        }
+
+        // Update facing for attacking
         if (this.target) {
             this.facing = angleTo(this.x, this.y, this.target.x, this.target.y);
+            // Face target when attacking
+            this.facingLeft = this.target.x < this.x;
+        }
+
+        // Determine animation state based on behavior
+        if (this.isAttacking) {
+            this.setAnimState(ANIM_STATES.ATTACK);
+        } else if (Math.abs(this.velocityX) > 10 || Math.abs(this.velocityY) > 10) {
+            this.setAnimState(ANIM_STATES.WALK);
+        } else {
+            this.setAnimState(ANIM_STATES.IDLE);
+        }
+
+        // Update current animator
+        if (this.currentAnimator) {
+            this.currentAnimator.update(dt);
         }
     }
 
@@ -222,6 +398,13 @@ export class NPC {
             return false;
         }
 
+        // Trigger attack animation
+        this.isAttacking = true;
+        this.attackAnimTimer = 0;
+        if (this.animators.attack) {
+            this.animators.attack.reset();
+        }
+
         this.fireCooldown = this.fireRate;
         return true;
     }
@@ -274,4 +457,4 @@ export class NPC {
     }
 }
 
-export { STATES };
+export { STATES, ANIM_STATES };

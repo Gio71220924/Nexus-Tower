@@ -4,6 +4,7 @@
  */
 
 import { clamp, normalize, angleTo, distance } from './utils.js';
+import { SpriteAnimator } from './sprite-animator.js';
 
 export class Player {
     constructor(x, y) {
@@ -42,10 +43,20 @@ export class Player {
         this.dashDirX = 0;
         this.dashDirY = 0;
 
-        // Visual
-        this.sprite = 'player_walk';
+        // Visual & Animation
+        this.sprite = 'player_idle';
         this.animation = 'idle';
         this.facing = 0; // angle in radians
+        this.facingLeft = false; // untuk flip sprite
+
+        // Animation timers
+        this.animationTime = 0;
+
+        // Create animators (akan di-init setelah assets loaded)
+        this.animators = {
+            idle: null,
+            walk: null
+        };
 
         // State
         this.alive = true;
@@ -78,6 +89,11 @@ export class Player {
 
             this.x += this.velocityX * dt;
             this.y += this.velocityY * dt;
+
+            // Update facing direction based on movement
+            if (Math.abs(this.velocityX) > 10) {
+                this.facingLeft = this.velocityX < 0;
+            }
         }
 
         // Clamp to canvas bounds
@@ -89,10 +105,29 @@ export class Player {
         this.facing = angleTo(this.x, this.y, mouse.x, mouse.y);
 
         // Update animation based on movement
+        const prevAnimation = this.animation;
         if (Math.abs(this.velocityX) > 10 || Math.abs(this.velocityY) > 10) {
             this.animation = 'walk';
+            this.sprite = 'player_walk';
         } else {
             this.animation = 'idle';
+            this.sprite = 'player_idle';
+        }
+
+        // Reset animator jika animation berubah
+        if (prevAnimation !== this.animation) {
+            if (this.animators[this.animation]) {
+                this.animators[this.animation].reset();
+            }
+            this.animationTime = 0;
+        }
+
+        // Update animation time
+        this.animationTime += dt;
+
+        // Update current animator
+        if (this.animators[this.animation]) {
+            this.animators[this.animation].update(dt);
         }
     }
 
@@ -213,6 +248,46 @@ export class Player {
             y: this.y,
             radius: this.radius
         };
+    }
+
+    /**
+     * Initialize animators dengan sprite sheets yang sudah loaded
+     * @param {Object} sprites - All loaded sprites
+     * @param {String} characterType - Character type: 'pink', 'owlet', or 'dude'
+     */
+    initAnimators(sprites, characterType = 'pink') {
+        const spriteKey = `player_${characterType}`;
+        const characterSprites = sprites[spriteKey];
+
+        if (!characterSprites) {
+            console.warn(`Character sprites not found for: ${characterType}`);
+            return;
+        }
+
+        // Initialize idle animator
+        if (characterSprites.idle) {
+            this.animators.idle = new SpriteAnimator(characterSprites.idle, 4, 32, 32);
+            this.animators.idle.setFrameRate(0.15);
+        }
+
+        // Initialize walk animator
+        if (characterSprites.walk) {
+            this.animators.walk = new SpriteAnimator(characterSprites.walk, 6, 32, 32);
+            this.animators.walk.setFrameRate(0.08);
+        }
+
+        // Store character type for renderer
+        this.characterType = characterType;
+    }
+
+    /**
+     * Get current frame index untuk animasi
+     */
+    getCurrentFrame() {
+        if (this.animators[this.animation]) {
+            return this.animators[this.animation].getCurrentFrame();
+        }
+        return 0;
     }
 
     /**

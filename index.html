@@ -32,28 +32,58 @@
 
                 <div class="menu-options">
                     <button id="btn-start" class="btn btn-primary">Start Game</button>
-
-                    <div class="difficulty-selector">
-                        <label for="difficulty">Difficulty:</label>
-                        <select id="difficulty" class="select">
-                            <option value="easy">Easy</option>
-                            <option value="normal" selected>Normal</option>
-                            <option value="hard">Hard</option>
-                            <option value="insane">Insane</option>
-                        </select>
-                    </div>
-
-                    <div class="difficulty-selector">
-                        <label for="weapon">Weapon:</label>
-                        <select id="weapon" class="select">
-                            <option value="rifle" selected>Rifle</option>
-                            <option value="sniper">Sniper</option>
-                            <option value="shotgun">Shotgun</option>
-                            <option value="smg">SMG</option>
-                        </select>
-                    </div>
-
                     <button id="btn-controls" class="btn btn-secondary">View Controls</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Character Selection Screen -->
+        <div id="character-screen" class="screen">
+            <div class="screen-content character-selection">
+                <h2>Select Your Character</h2>
+
+                <!-- Character Selection -->
+                <div class="character-grid">
+                    <div class="character-card" data-character="pink">
+                        <div class="character-preview" id="preview-pink"></div>
+                        <div class="character-name">Pink Monster</div>
+                    </div>
+                    <div class="character-card" data-character="owlet">
+                        <div class="character-preview" id="preview-owlet"></div>
+                        <div class="character-name">Owlet Monster</div>
+                    </div>
+                    <div class="character-card" data-character="dude">
+                        <div class="character-preview" id="preview-dude"></div>
+                        <div class="character-name">Dude Monster</div>
+                    </div>
+                </div>
+
+                <!-- Difficulty Selection -->
+                <div class="selection-section">
+                    <label for="difficulty">Difficulty:</label>
+                    <select id="difficulty" class="select">
+                        <option value="easy">Easy</option>
+                        <option value="normal" selected>Normal</option>
+                        <option value="hard">Hard</option>
+                        <option value="insane">Insane</option>
+                    </select>
+                </div>
+
+                <!-- Weapon Selection -->
+                <div class="selection-section">
+                    <label for="weapon">Weapon:</label>
+                    <select id="weapon" class="select">
+                        <option value="rifle" selected>Rifle</option>
+                        <option value="sniper">Sniper</option>
+                        <option value="shotgun">Shotgun</option>
+                        <option value="smg">SMG</option>
+                    </select>
+                </div>
+
+                <!-- Start Button -->
+                <div class="menu-options">
+                    <button id="btn-begin-game" class="btn btn-primary">Begin Game</button>
+                    <button id="btn-back-to-menu" class="btn btn-secondary">Back</button>
                 </div>
             </div>
         </div>
@@ -94,11 +124,22 @@
 
         <!-- Game Screen -->
         <div id="game-screen" class="screen">
-            <canvas id="gameCanvas" width="1280" height="720"></canvas>
+            <!-- Position Indicator (Minimap) -->
+            <div id="position-indicator" class="position-indicator">
+                <div class="indicator-label">Player Position</div>
+                <div class="indicator-map">
+                    <div id="player-dot" class="player-dot"></div>
+                </div>
+                <div class="indicator-coords">
+                    <span id="player-x">X: 0</span> | <span id="player-y">Y: 0</span>
+                </div>
+            </div>
+
+            <canvas id="gameCanvas" width="1600" height="900"></canvas>
 
             <!-- HUD Overlay -->
             <div id="hud" class="hud">
-                <div class="hud-top">
+                <div class="hud-top-center">
                     <div class="hud-item">
                         <span class="hud-label">Level</span>
                         <span id="hud-level" class="hud-value">1</span>
@@ -109,17 +150,7 @@
                     </div>
                 </div>
 
-                <div class="hud-bottom">
-                    <div class="health-container">
-                        <div class="health-label">Player HP</div>
-                        <div class="health-bar-wrapper">
-                            <div class="health-bar">
-                                <div id="player-health-fill" class="health-fill player"></div>
-                            </div>
-                            <span id="player-health-text" class="health-text">100 / 100</span>
-                        </div>
-                    </div>
-
+                <div class="hud-left">
                     <div class="health-container">
                         <div class="health-label">Nexus HP</div>
                         <div class="health-bar-wrapper">
@@ -127,6 +158,16 @@
                                 <div id="nexus-health-fill" class="health-fill nexus"></div>
                             </div>
                             <span id="nexus-health-text" class="health-text">200 / 200</span>
+                        </div>
+                    </div>
+
+                    <div class="health-container">
+                        <div class="health-label">Player HP</div>
+                        <div class="health-bar-wrapper">
+                            <div class="health-bar">
+                                <div id="player-health-fill" class="health-fill player"></div>
+                            </div>
+                            <span id="player-health-text" class="health-text">100 / 100</span>
                         </div>
                     </div>
                 </div>

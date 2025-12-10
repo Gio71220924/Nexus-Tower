@@ -32,6 +32,7 @@ export class Game {
         this.level = 1;
         this.difficulty = 'normal';
         this.weaponChoice = 'rifle';
+        this.characterChoice = 'pink'; // Selected character
         this.savedProgress = null;
         this.highestLevels = {};
 
@@ -47,6 +48,7 @@ export class Game {
         this.screens = {
             loading: getElement('loading-screen'),
             menu: getElement('menu-screen'),
+            character: getElement('character-screen'),
             controls: getElement('controls-screen'),
             game: getElement('game-screen'),
             pause: getElement('pause-screen'),
@@ -70,6 +72,13 @@ export class Game {
             nexusHealthText: getElement('nexus-health-text')
         };
 
+        // Position indicator elements
+        this.positionElements = {
+            playerDot: getElement('player-dot'),
+            playerX: getElement('player-x'),
+            playerY: getElement('player-y')
+        };
+
         // Game loop
         this.lastTime = 0;
         this.fps = 60;
@@ -86,9 +95,31 @@ export class Game {
 
     setupEventListeners() {
         // Menu buttons
-        getElement('btn-start').addEventListener('click', () => this.startGame());
+        getElement('btn-start').addEventListener('click', () => this.showCharacterSelection());
         getElement('btn-controls').addEventListener('click', () => this.showControls());
         getElement('btn-back-controls').addEventListener('click', () => this.showMenu());
+
+        // Character selection
+        const characterCards = document.querySelectorAll('.character-card');
+        characterCards.forEach(card => {
+            card.addEventListener('click', () => {
+                // Remove selected class from all cards
+                characterCards.forEach(c => c.classList.remove('selected'));
+                // Add selected class to clicked card
+                card.classList.add('selected');
+                // Store character choice
+                this.characterChoice = card.dataset.character;
+            });
+        });
+
+        // Select first character by default
+        if (characterCards.length > 0) {
+            characterCards[0].classList.add('selected');
+        }
+
+        // Character screen buttons
+        getElement('btn-begin-game').addEventListener('click', () => this.startGame());
+        getElement('btn-back-to-menu').addEventListener('click', () => this.showMenu());
 
         // Difficulty selector
         getElement('difficulty').addEventListener('change', (e) => {
@@ -137,6 +168,21 @@ export class Game {
         // Setup complete callback
         this.assetLoader.onComplete((assets) => {
             console.log('✅ All assets loaded!', assets);
+
+            // Create SD sprite sheet dari individual frames
+            const sdSpriteSheet = this.assetLoader.createSDSpriteSheet();
+            if (sdSpriteSheet) {
+                // Tambahkan sprite sheet ke assets
+                assets.enemies.sd = sdSpriteSheet;
+                console.log('✅ SD sprite sheet created!', {
+                    width: sdSpriteSheet.width,
+                    height: sdSpriteSheet.height
+                });
+            } else {
+                console.error('❌ Failed to create SD sprite sheet!');
+                console.log('SD frames:', assets.enemies?.sd_frames);
+            }
+
             // Pass assets to renderer
             this.renderer.setAssets(assets);
             // Transition to menu
@@ -178,6 +224,14 @@ export class Game {
         this.player = new Player(160, this.height / 2);
         this.player.applyWeaponStats(this.weaponChoice || 'rifle');
 
+        // Set player character type
+        this.player.characterType = this.characterChoice;
+
+        // Initialize player animators dengan sprites yang sudah loaded
+        if (this.renderer && this.renderer.sprites) {
+            this.player.initAnimators(this.renderer.sprites, this.characterChoice);
+        }
+
         // Create nexus
         this.nexus = new Nexus(100, this.height / 2);
 
@@ -195,6 +249,13 @@ export class Game {
         const levelData = this.levelGenerator.generateLevel(level);
         this.bases = levelData.bases;
         this.npcs = levelData.npcs;
+
+        // Initialize animators untuk semua NPCs
+        if (this.renderer && this.renderer.sprites) {
+            this.npcs.forEach(npc => {
+                npc.initAnimator(this.renderer.sprites);
+            });
+        }
 
         // Reset projectiles and particles
         this.projectiles = [];
@@ -257,6 +318,12 @@ export class Game {
 
     showMenu() {
         this.setState(GAME_STATES.MENU);
+    }
+
+    showCharacterSelection() {
+        this.hideAllScreens();
+        showElement(this.screens.character, true);
+        this.renderCharacterPreviews();
     }
 
     showControls() {
@@ -477,8 +544,8 @@ export class Game {
                 }
             }
 
-            // Remove dead NPCs
-            if (!npc.alive) {
+            // Remove fully dead NPCs (after death animation completes)
+            if (npc.fullyDead) {
                 this.npcs.splice(i, 1);
             }
         }
@@ -608,6 +675,58 @@ export class Game {
         this.hudElements.nexusHealthFill.style.width = nexusPercent + '%';
         this.hudElements.nexusHealthText.textContent =
             `${Math.round(this.nexus.hp)} / ${this.nexus.maxHp}`;
+
+        // Update position indicator
+        this.updatePositionIndicator();
+    }
+
+    updatePositionIndicator() {
+        if (!this.player) return;
+
+        // Update coordinates display
+        if (this.positionElements.playerX) {
+            this.positionElements.playerX.textContent = `X: ${Math.round(this.player.x)}`;
+        }
+        if (this.positionElements.playerY) {
+            this.positionElements.playerY.textContent = `Y: ${Math.round(this.player.y)}`;
+        }
+
+        const mapContainer = document.querySelector('.indicator-map');
+        if (!mapContainer || !this.positionElements.playerDot) return;
+
+        // Clear existing dots
+        const existingDots = mapContainer.querySelectorAll('.enemy-dot, .base-dot');
+        existingDots.forEach(dot => dot.remove());
+
+        // Update player dot position
+        const percentX = (this.player.x / this.width) * 100;
+        const percentY = (this.player.y / this.height) * 100;
+        this.positionElements.playerDot.style.left = `${percentX}%`;
+        this.positionElements.playerDot.style.top = `${percentY}%`;
+
+        // Add enemy dots
+        this.npcs.forEach(npc => {
+            if (!npc.alive) return;
+            const dot = document.createElement('div');
+            dot.className = 'enemy-dot';
+            const npcPercentX = (npc.x / this.width) * 100;
+            const npcPercentY = (npc.y / this.height) * 100;
+            dot.style.left = `${npcPercentX}%`;
+            dot.style.top = `${npcPercentY}%`;
+            mapContainer.appendChild(dot);
+        });
+
+        // Add base dots
+        this.bases.forEach(base => {
+            if (base.destroyed) return;
+            const dot = document.createElement('div');
+            dot.className = 'base-dot';
+            const basePercentX = (base.x / this.width) * 100;
+            const basePercentY = (base.y / this.height) * 100;
+            dot.style.left = `${basePercentX}%`;
+            dot.style.top = `${basePercentY}%`;
+            mapContainer.appendChild(dot);
+        });
     }
 
     spawnRaider(base) {
@@ -615,6 +734,12 @@ export class Game {
 
         const spawn = base.getSpawnPoint();
         const raider = new NPC(spawn.x, spawn.y, base.team, base, this.level);
+
+        // Initialize raider animator dengan sprites yang sudah loaded
+        if (this.renderer && this.renderer.sprites) {
+            raider.initAnimator(this.renderer.sprites);
+        }
+
         // Configure raider to push toward Nexus (user turret)
         raider.state = STATES.CHASE;
         raider.target = this.nexus;
@@ -721,6 +846,77 @@ export class Game {
             ...this.npcs,
             ...this.projectiles
         ];
+    }
+
+    /**
+     * Render character preview animations in selection screen
+     */
+    renderCharacterPreviews() {
+        if (!this.renderer || !this.renderer.sprites) return;
+
+        const characters = ['pink', 'owlet', 'dude'];
+        const previewTime = performance.now() / 1000; // Use current time for animation
+
+        characters.forEach(charType => {
+            const previewDiv = getElement(`preview-${charType}`);
+            if (!previewDiv) return;
+
+            // Clear previous content
+            previewDiv.innerHTML = '';
+
+            // Create canvas for preview
+            const canvas = document.createElement('canvas');
+            canvas.width = 96;
+            canvas.height = 96;
+            const ctx = canvas.getContext('2d');
+            ctx.imageSmoothingEnabled = false;
+
+            // Get idle sprite for this character
+            const spriteKey = `player_${charType}`;
+            const idleSprite = this.renderer.sprites[spriteKey]?.idle;
+
+            if (idleSprite) {
+                // Draw idle animation frame
+                const frameCount = 4; // Pink Monster idle has 4 frames
+                const frameWidth = idleSprite.width / frameCount;
+                const frameHeight = idleSprite.height;
+                const frameIndex = Math.floor((previewTime * 8) % frameCount); // 8 fps animation
+
+                // Calculate scale to fit in preview
+                const scale = Math.min(
+                    canvas.width / frameWidth,
+                    canvas.height / frameHeight
+                ) * 0.8; // 0.8 to add some padding
+
+                const drawWidth = frameWidth * scale;
+                const drawHeight = frameHeight * scale;
+                const drawX = (canvas.width - drawWidth) / 2;
+                const drawY = (canvas.height - drawHeight) / 2;
+
+                ctx.drawImage(
+                    idleSprite,
+                    frameIndex * frameWidth, 0, // Source
+                    frameWidth, frameHeight,
+                    drawX, drawY, // Destination
+                    drawWidth, drawHeight
+                );
+            } else {
+                // Fallback: draw placeholder
+                ctx.fillStyle = '#334155';
+                ctx.fillRect(20, 20, 56, 56);
+                ctx.fillStyle = '#22d3ee';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(charType.toUpperCase(), 48, 52);
+            }
+
+            previewDiv.appendChild(canvas);
+        });
+
+        // Animate previews continuously
+        if (this.screens.character && this.screens.character.classList.contains('active')) {
+            requestAnimationFrame(() => this.renderCharacterPreviews());
+        }
     }
 
     // ===== Persistence =====

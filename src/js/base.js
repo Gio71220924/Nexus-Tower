@@ -107,7 +107,17 @@ export class Nexus extends Base {
 
         this.hp = 200;
         this.maxHp = 200;
-        this.sprite = 'castle_green';
+
+        // Random Combat Tower sprite untuk Nexus (player base)
+        const nexusTowerSprites = [
+            'tower_archer',
+            'tower_cannon',
+            'tower_crossbow',
+            'tower_ice_wizard',
+            'tower_lightning',
+            'tower_poison_wizard'
+        ];
+        this.sprite = nexusTowerSprites[Math.floor(Math.random() * nexusTowerSprites.length)];
 
         // Turret stats (player base can attack)
         this.damage = 20;
@@ -143,15 +153,39 @@ export class EnemyBase extends Base {
         this.hp = baseHp;
         this.maxHp = baseHp;
 
-        this.sprite = 'castle_red';
+        // Random tower sprite dari Combat Towers
+        const towerSprites = [
+            'tower_archer',
+            'tower_cannon',
+            'tower_crossbow',
+            'tower_ice_wizard',
+            'tower_lightning',
+            'tower_poison_wizard'
+        ];
+        this.sprite = towerSprites[Math.floor(Math.random() * towerSprites.length)];
 
-        // Raider spawn
-        this.raidersToSpawn = 1;          // One raider ready at game start
-        this.raiderSpawnTimer = 0.5;      // Spawn very soon after level start
-        this.raiderSpawnInterval = 2.5;
+        // Raider spawn - scales with level for progressive difficulty
+        this.level = level;
+
+        // Initial raiders ready to spawn (1 at start, more at higher levels)
+        this.raidersToSpawn = 1 + Math.floor((level - 1) / 3);
+
+        // Time before first spawn (spawn quickly at start)
+        this.raiderSpawnTimer = 0.5;
+
+        // Interval between spawns (longer at low levels, shorter at high)
+        // Level 1: 6s, Level 5: 4s, Level 10: 2.5s
+        this.raiderSpawnInterval = Math.max(2.5, 6.0 - (level - 1) * 0.4);
+
         this.raiderAggroActive = true;    // Active from the beginning
-        this.raiderAutoInterval = 6.5;    // Continuous raid cycle (slower)
-        this.raiderAutoTimer = 5.0;
+
+        // Auto-queue interval (longer at low levels, shorter at high)
+        // Level 1: 10s, Level 5: 7s, Level 10: 4s
+        this.raiderAutoInterval = Math.max(4.0, 10.0 - (level - 1) * 0.7);
+
+        // First auto-queue timer (give player time to prepare)
+        // Level 1: 12s, Level 5: 8s, Level 10: 5s
+        this.raiderAutoTimer = Math.max(5.0, 12.0 - (level - 1) * 0.8);
 
         // Turret combat (lets towers shoot back)
         const baseDamage = 10 + Math.floor((level - 1) * 1.2);

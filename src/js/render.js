@@ -149,6 +149,9 @@ export class Renderer {
         this.ctx.save();
         this.ctx.translate(player.x, player.y);
 
+        // Ensure full opacity
+        this.ctx.globalAlpha = 1.0;
+
         // Shadow
         this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
         this.ctx.beginPath();
@@ -156,8 +159,12 @@ export class Renderer {
         this.ctx.fill();
 
         // Player sprite (jika loaded)
-        if (player.sprite && this.sprites[player.sprite]) {
-            const img = this.sprites[player.sprite];
+        const characterType = player.characterType || 'pink';
+        const characterSprites = this.sprites[`player_${characterType}`];
+        const currentAnimation = player.animation || 'idle';
+
+        if (characterSprites && characterSprites[currentAnimation]) {
+            const img = characterSprites[currentAnimation];
             const size = player.radius * 4; // Optimized size for clarity
 
             // Drop shadow
@@ -165,9 +172,17 @@ export class Renderer {
             this.ctx.shadowBlur = 10;
             this.ctx.shadowOffsetY = 5;
 
-            // Get sprite config for player walk animation
-            const config = SPRITE_CONFIGS.PLAYER_WALK;
-            const frameIndex = Math.floor(Date.now() / 100) % config.frames; // Simple animation
+            // Get sprite config berdasarkan animation state
+            const configKey = player.animation === 'idle' ? 'PLAYER_IDLE' : 'PLAYER_WALK';
+            const config = SPRITE_CONFIGS[configKey];
+
+            // Get frame dari player's animator
+            const frameIndex = player.getCurrentFrame ? player.getCurrentFrame() : 0;
+
+            // Flip sprite berdasarkan arah
+            if (player.facingLeft) {
+                this.ctx.scale(-1, 1);
+            }
 
             // Draw single frame from sprite sheet
             drawSpriteFrame(
@@ -181,6 +196,11 @@ export class Renderer {
                 size,
                 size
             );
+
+            // Reset transformations
+            if (player.facingLeft) {
+                this.ctx.scale(-1, 1);
+            }
 
             // Reset shadow
             this.ctx.shadowColor = 'transparent';
@@ -208,7 +228,11 @@ export class Renderer {
 
         // HP bar (adjusted position for larger sprite)
         if (player.hp < player.maxHp) {
-            const spriteSize = player.sprite && this.sprites[player.sprite] ? player.radius * 4 : player.radius;
+            const characterType = player.characterType || 'pink';
+            const characterSprites = this.sprites[`player_${characterType}`];
+            const currentAnimation = player.animation || 'idle';
+            const hasSprite = characterSprites && characterSprites[currentAnimation];
+            const spriteSize = hasSprite ? player.radius * 4 : player.radius;
             this.drawHealthBar(0, -spriteSize / 2 - 14, 48, 5, player.hp, player.maxHp, TEAM_COLORS.player);
         }
 
@@ -218,6 +242,9 @@ export class Renderer {
     drawNexus(nexus) {
         this.ctx.save();
         this.ctx.translate(nexus.x, nexus.y);
+
+        // Ensure full opacity
+        this.ctx.globalAlpha = 1.0;
 
         // Aggro radius (disabled for cleaner look)
         // if (this.showAggroRadius) {
@@ -239,28 +266,42 @@ export class Renderer {
         // Nexus sprite
         if (nexus.sprite && this.sprites[nexus.sprite]) {
             const img = this.sprites[nexus.sprite];
-            const displaySize = nexus.width * 1.3; // Optimized size for clarity
+            const displaySize = nexus.width * 1.5; // Smaller, balanced size
 
             // Glow effect
             this.ctx.shadowColor = '#22c55e';
             this.ctx.shadowBlur = 25;
 
-            // Get castle sprite config and animate
-            const config = SPRITE_CONFIGS.CASTLE;
-            const frameIndex = 0; // Keep player turret static
+            // Check if this is a Combat Tower (single image) or Castle (sprite sheet)
+            const isCombatTower = nexus.sprite.startsWith('tower_');
 
-            // Draw single frame from sprite sheet
-            drawSpriteFrame(
-                this.ctx,
-                img,
-                frameIndex,
-                config.width,
-                config.height,
-                -displaySize / 2,
-                -displaySize / 2,
-                displaySize,
-                displaySize
-            );
+            if (isCombatTower) {
+                // Combat Towers are single images, draw directly
+                this.ctx.drawImage(
+                    img,
+                    -displaySize / 2,
+                    -displaySize / 2,
+                    displaySize,
+                    displaySize
+                );
+            } else {
+                // Castles are sprite sheets
+                const config = SPRITE_CONFIGS.CASTLE;
+                const frameIndex = 0; // Keep player turret static
+
+                // Draw single frame from sprite sheet
+                drawSpriteFrame(
+                    this.ctx,
+                    img,
+                    frameIndex,
+                    config.width,
+                    config.height,
+                    -displaySize / 2,
+                    -displaySize / 2,
+                    displaySize,
+                    displaySize
+                );
+            }
 
             this.ctx.shadowBlur = 0;
         } else {
@@ -281,7 +322,7 @@ export class Renderer {
         }
 
         // HP bar (adjusted position for larger sprite)
-        const nexusDisplaySize = nexus.sprite && this.sprites[nexus.sprite] ? nexus.width * 1.3 : nexus.width;
+        const nexusDisplaySize = nexus.sprite && this.sprites[nexus.sprite] ? nexus.width * 1.5 : nexus.width;
         this.drawHealthBar(0, -nexusDisplaySize / 2 - 14, nexusDisplaySize * 0.75, 6, nexus.hp, nexus.maxHp, '#22c55e');
 
         this.ctx.restore();
@@ -309,12 +350,18 @@ export class Renderer {
             this.ctx.lineTo(-base.width / 3, base.height / 3);
             this.ctx.stroke();
 
+            // Reset alpha
+            this.ctx.globalAlpha = 1.0;
+
             this.ctx.restore();
             return;
         }
 
         this.ctx.save();
         this.ctx.translate(base.x, base.y);
+
+        // Ensure full opacity
+        this.ctx.globalAlpha = 1.0;
 
         // Turret range indicator
         this.drawRangeRing(base.attackRange, 'rgba(255, 255, 255, 0.25)', 1.5);
@@ -340,28 +387,42 @@ export class Renderer {
         // Base sprite
         if (base.sprite && this.sprites[base.sprite]) {
             const img = this.sprites[base.sprite];
-            const displaySize = base.width * 1.3; // Optimized size for clarity
+            const displaySize = base.width * 1.5; // Smaller, balanced size
 
             // Glow effect
             this.ctx.shadowColor = TEAM_COLORS[base.team];
             this.ctx.shadowBlur = 20;
 
-            // Get castle sprite config and animate
-            const config = SPRITE_CONFIGS.CASTLE;
-            const frameIndex = 0; // Keep turret base static
+            // Check if this is a Combat Tower (single image) or Castle (sprite sheet)
+            const isCombatTower = base.sprite.startsWith('tower_');
 
-            // Draw single frame from sprite sheet
-            drawSpriteFrame(
-                this.ctx,
-                img,
-                frameIndex,
-                config.width,
-                config.height,
-                -displaySize / 2,
-                -displaySize / 2,
-                displaySize,
-                displaySize
-            );
+            if (isCombatTower) {
+                // Combat Towers are single images, draw directly
+                this.ctx.drawImage(
+                    img,
+                    -displaySize / 2,
+                    -displaySize / 2,
+                    displaySize,
+                    displaySize
+                );
+            } else {
+                // Castles are sprite sheets
+                const config = SPRITE_CONFIGS.CASTLE;
+                const frameIndex = 0; // Keep turret base static
+
+                // Draw single frame from sprite sheet
+                drawSpriteFrame(
+                    this.ctx,
+                    img,
+                    frameIndex,
+                    config.width,
+                    config.height,
+                    -displaySize / 2,
+                    -displaySize / 2,
+                    displaySize,
+                    displaySize
+                );
+            }
 
             this.ctx.shadowBlur = 0;
         } else {
@@ -383,7 +444,7 @@ export class Renderer {
         }
 
         // HP bar (adjusted position for larger sprite)
-        const baseDisplaySize = base.sprite && this.sprites[base.sprite] ? base.width * 1.3 : base.width;
+        const baseDisplaySize = base.sprite && this.sprites[base.sprite] ? base.width * 1.5 : base.width;
         this.drawHealthBar(0, -baseDisplaySize / 2 - 14, baseDisplaySize * 0.75, 6, base.hp, base.maxHp, '#ef4444');
 
         // Hit glow
@@ -404,16 +465,82 @@ export class Renderer {
         this.ctx.save();
         this.ctx.translate(npc.x, npc.y);
 
+        // Ensure full opacity
+        this.ctx.globalAlpha = 1.0;
+
         // Shadow
         this.ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
         this.ctx.beginPath();
         this.ctx.ellipse(0, npc.radius, npc.radius * 0.7, npc.radius * 0.25, 0, 0, Math.PI * 2);
         this.ctx.fill();
 
-        // NPC sprite
-        if (npc.sprite && this.sprites[npc.sprite]) {
+        // Check if soldier sprite
+        const isSoldier = npc.sprite && npc.sprite.startsWith('soldier_');
+
+
+        // Draw soldier sprites with proper animation state
+        if (isSoldier) {
+            // Get current sprite sheet from NPC's animator
+            const spriteSheet = npc.getCurrentSpriteSheet();
+            const frameDims = npc.getFrameDimensions();
+
+            if (spriteSheet) {
+                const size = npc.radius * 5;
+
+                // Death fade effect
+                if (!npc.alive && npc.deathTimer > 0) {
+                    const fadeStart = npc.deathDuration - 1.0; // Start fading 1 second before removal
+                    if (npc.deathTimer > fadeStart) {
+                        const fadeProgress = (npc.deathTimer - fadeStart) / 1.0;
+                        this.ctx.globalAlpha = Math.max(0, 1 - fadeProgress);
+                    }
+                }
+
+                // Drop shadow
+                this.ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+                this.ctx.shadowBlur = 8;
+                this.ctx.shadowOffsetY = 4;
+
+                // Get frame info
+                const frameIndex = npc.getCurrentFrame();
+
+                // Flip sprite based on direction
+                if (npc.facingLeft) {
+                    this.ctx.scale(-1, 1);
+                }
+
+                // Draw frame with smooth rendering
+                drawSpriteFrame(
+                    this.ctx,
+                    spriteSheet,
+                    frameIndex,
+                    frameDims.width,
+                    frameDims.height,
+                    -size / 2,
+                    -size / 2,
+                    size,
+                    size
+                );
+
+                // Reset flip
+                if (npc.facingLeft) {
+                    this.ctx.scale(-1, 1);
+                }
+
+                // Reset shadow and alpha
+                this.ctx.shadowBlur = 0;
+                this.ctx.shadowOffsetY = 0;
+                this.ctx.globalAlpha = 1.0;
+            } else {
+                // Fallback if no sprite sheet
+                this.drawNPCFallback(npc);
+            }
+        }
+        // Draw other sprites (spr_ enemies)
+        else if (npc.sprite && this.sprites[npc.sprite] && this.sprites[npc.sprite].width) {
+            // Old SD or other sprite format
             const img = this.sprites[npc.sprite];
-            const size = npc.radius * 3.5; // Optimized size for clarity
+            const size = npc.radius * 3.5;
 
             // Drop shadow for sprite
             this.ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
@@ -423,23 +550,45 @@ export class Renderer {
             // Get sprite config and animate
             const config = getSpriteConfig(npc.sprite);
             if (config) {
-                const frameIndex = 0; // Keep minion sprite static
+                // Get frame dari npc's animator
+                const frameIndex = npc.getCurrentFrame ? npc.getCurrentFrame() : 0;
 
-                // Draw single frame from sprite sheet
-                drawSpriteFrame(
-                    this.ctx,
-                    img,
-                    frameIndex,
-                    config.width,
-                    config.height,
-                    -size / 2,
-                    -size / 2,
-                    size,
-                    size
-                );
+                // Flip sprite berdasarkan arah
+                if (npc.facingLeft) {
+                    this.ctx.scale(-1, 1);
+                }
+
+                try {
+                    // Draw single frame from sprite sheet
+                    drawSpriteFrame(
+                        this.ctx,
+                        img,
+                        frameIndex,
+                        config.width,
+                        config.height,
+                        -size / 2,
+                        -size / 2,
+                        size,
+                        size
+                    );
+                } catch (error) {
+                    console.error('Error drawing NPC sprite frame:', error);
+                    // Fallback to circle jika error
+                    this.drawNPCFallback(npc);
+                }
+
+                // Reset transformations
+                if (npc.facingLeft) {
+                    this.ctx.scale(-1, 1);
+                }
             } else {
                 // Fallback: draw entire sprite
-                this.ctx.drawImage(img, -size / 2, -size / 2, size, size);
+                try {
+                    this.ctx.drawImage(img, -size / 2, -size / 2, size, size);
+                } catch (error) {
+                    console.error('Error drawing NPC sprite:', error);
+                    this.drawNPCFallback(npc);
+                }
             }
 
             // Reset shadow
@@ -496,6 +645,39 @@ export class Renderer {
         }
 
         this.ctx.restore();
+    }
+
+    drawNPCFallback(npc) {
+        // Draw circle dengan glow untuk fallback
+        const color = TEAM_COLORS[npc.team];
+
+        // Glow based on state
+        if (npc.state === 'CHASE') {
+            this.ctx.shadowColor = color;
+            this.ctx.shadowBlur = 12;
+        }
+
+        this.ctx.fillStyle = color;
+        this.ctx.beginPath();
+        this.ctx.arc(0, 0, npc.radius, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        this.ctx.shadowBlur = 0;
+
+        // Border if GUARD
+        if (npc.state === 'GUARD') {
+            this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+            this.ctx.lineWidth = 2;
+            this.ctx.beginPath();
+            this.ctx.arc(0, 0, npc.radius + 1, 0, Math.PI * 2);
+            this.ctx.stroke();
+        }
+
+        // Inner highlight
+        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+        this.ctx.beginPath();
+        this.ctx.arc(-npc.radius * 0.3, -npc.radius * 0.3, npc.radius * 0.4, 0, Math.PI * 2);
+        this.ctx.fill();
     }
 
     drawProjectile(projectile) {
@@ -698,18 +880,27 @@ export class Renderer {
     setAssets(assets) {
         // Map asset structure to flat sprite keys for easy access
         this.sprites = {
-            // Player sprites
-            player_idle: assets.player?.idle,
-            player_walk: assets.player?.walk,
-            player_run: assets.player?.run,
-            player_hurt: assets.player?.hurt,
-            player_death: assets.player?.death,
+            // Player sprites - all 3 characters
+            player_pink: assets.player_pink,
+            player_owlet: assets.player_owlet,
+            player_dude: assets.player_dude,
 
             // Base sprites
             castle_green: assets.bases?.castle_green,
             castle_red: assets.bases?.castle_red,
+            // Combat Towers
+            tower_archer: assets.bases?.tower_archer,
+            tower_cannon: assets.bases?.tower_cannon,
+            tower_crossbow: assets.bases?.tower_crossbow,
+            tower_ice_wizard: assets.bases?.tower_ice_wizard,
+            tower_lightning: assets.bases?.tower_lightning,
+            tower_poison_wizard: assets.bases?.tower_poison_wizard,
 
             // Enemy sprites
+            sd: assets.enemies?.sd,
+            soldier_1: assets.enemies?.soldier_1,
+            soldier_2: assets.enemies?.soldier_2,
+            soldier_3: assets.enemies?.soldier_3,
             bat: assets.enemies?.bat,
             slime: assets.enemies?.slime,
             big_slime: assets.enemies?.big_slime,
@@ -735,7 +926,7 @@ export class Renderer {
             background: assets.environment?.background
         };
 
-        console.log('✅ Renderer assets loaded:', this.sprites);
+        console.log('✅ Renderer assets loaded');
     }
 
     // ===== Color Utilities =====

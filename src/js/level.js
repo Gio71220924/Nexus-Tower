@@ -168,8 +168,13 @@ export class LevelGenerator {
     /**
      * Create NPC dengan difficulty scaling
      */
-    createNPC(x, y, team, base, level) {
+    createNPC(x, y, team, base, level, sprites = null) {
         const npc = new NPC(x, y, team, base, level);
+
+        // Initialize animator jika sprites tersedia
+        if (sprites) {
+            npc.initAnimator(sprites);
+        }
 
         // Apply difficulty multipliers
         npc.hp = Math.round(npc.hp * this.difficulty.npcHpMultiplier);
