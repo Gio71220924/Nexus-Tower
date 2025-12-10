@@ -134,13 +134,6 @@ export class Game {
         });
 
         // Weapon selector
-        const weaponSelect = getElement('weapon');
-        if (weaponSelect) {
-            weaponSelect.addEventListener('change', (e) => {
-                this.setWeaponChoice(e.target.value);
-            });
-        }
-
         // Pause buttons
         getElement('btn-resume').addEventListener('click', () => this.resumeGame());
         getElement('btn-restart').addEventListener('click', () => this.restartLevel());
@@ -1039,10 +1032,6 @@ export class Game {
                 }
                 if (this.savedProgress.weapon) {
                     this.weaponChoice = this.savedProgress.weapon;
-                    const weaponSelect = getElement('weapon');
-                    if (weaponSelect) {
-                        weaponSelect.value = this.weaponChoice;
-                    }
                 }
             }
 

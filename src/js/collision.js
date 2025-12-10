@@ -50,9 +50,10 @@ export class CollisionHandler {
      * Check projectile collisions
      */
     checkProjectileCollisions(player, nexus, bases, npcs, projectiles) {
-        const applySplashDamage = (proj, centerX, centerY, teamFilter = null) => {
+        const applySplashDamage = (proj, centerX, centerY, teamFilter = null, damageOverride = null) => {
             if (!proj.splashRadius || proj.splashRadius <= 0) return false;
             let hitAny = false;
+            const dmg = typeof damageOverride === 'number' ? damageOverride : proj.damage;
 
             // Splash vs NPCs
             for (const npc of npcs) {
@@ -62,10 +63,10 @@ export class CollisionHandler {
                 const dy = npc.y - centerY;
                 const distSq = dx * dx + dy * dy;
                 if (distSq <= proj.splashRadius * proj.splashRadius) {
-                    npc.takeDamage(proj.damage);
+                    npc.takeDamage(dmg);
                     npc.hitFlashTimer = 0.2;
                     this.spawnParticles(npc.x, npc.y, '#fbbf24');
-                    this.spawnDamage(npc.x, npc.y - npc.radius, proj.damage, '#ef4444');
+                    this.spawnDamage(npc.x, npc.y - npc.radius, dmg, '#ef4444');
                     hitAny = true;
                 }
             }
@@ -90,13 +91,16 @@ export class CollisionHandler {
                         proj.x, proj.y, proj.radius,
                         npc.x, npc.y, npc.radius
                     )) {
+                        const headshot = proj.y < npc.y; // top half = headshot
+                        const damage = headshot ? Math.round(proj.damage * 1.2) : proj.damage;
+
                         if (proj.splashRadius && proj.splashRadius > 0) {
-                            applySplashDamage(proj, proj.x, proj.y, npc.team);
+                            applySplashDamage(proj, proj.x, proj.y, npc.team, damage);
                         } else {
-                            npc.takeDamage(proj.damage);
+                            npc.takeDamage(damage);
                             npc.hitFlashTimer = 0.18;
                             this.spawnParticles(npc.x, npc.y, '#fbbf24');
-                            this.spawnDamage(npc.x, npc.y - npc.radius, proj.damage, '#ef4444');
+                            this.spawnDamage(npc.x, npc.y - npc.radius, damage, '#ef4444');
                         }
                         proj.destroy();
                         hitNPC = true;
