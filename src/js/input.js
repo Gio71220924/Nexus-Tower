@@ -106,8 +106,33 @@ export class InputManager {
 
     handleMouseMove(e) {
         const rect = this.canvas.getBoundingClientRect();
-        this.mouse.x = e.clientX - rect.left;
-        this.mouse.y = e.clientY - rect.top;
+        
+        // Get the current scale from the game container's transform
+        const gameContainer = document.getElementById('game-container');
+        let scale = 1;
+        
+        if (gameContainer) {
+            const transform = window.getComputedStyle(gameContainer).transform;
+            if (transform && transform !== 'none') {
+                // Extract scale from matrix transform
+                const matrix = new DOMMatrix(transform);
+                scale = matrix.a; // Scale X (assuming uniform scaling)
+            }
+        }
+        
+        // Alternative: use stored scale from window.game
+        if (window.game && window.game.currentScale) {
+            scale = window.game.currentScale;
+        }
+        
+        // Calculate mouse position accounting for scale
+        // The rect already accounts for the visual size, but we need game coordinates
+        const rawX = e.clientX - rect.left;
+        const rawY = e.clientY - rect.top;
+        
+        // Convert to game coordinates (the canvas is 1600x900 but may be scaled)
+        this.mouse.x = rawX / scale;
+        this.mouse.y = rawY / scale;
 
         // World coordinates (same as canvas coordinates in this case)
         this.mouse.worldX = this.mouse.x;
