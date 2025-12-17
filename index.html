@@ -1,241 +1,405 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Nexus Tower Defender - Game tower defense 2D dengan aksi menembak intensif. Lindungi Nexus Anda dari serangan musuh!">
+    <meta name="keywords" content="game, tower defense, shooter, browser game, HTML5 game">
     <title>Nexus Tower Defender</title>
-    <link rel="stylesheet" href="src/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="src/css/landing.css">
 </head>
 <body>
-    <div id="game-container">
-        <!-- Loading Screen -->
-        <div id="loading-screen" class="screen active">
-            <div class="screen-content">
-                <h1 class="game-title">Nexus Tower Defender</h1>
-                <div class="loading-container">
-                    <div class="loading-label">Loading Assets...</div>
-                    <div class="loading-bar-wrapper">
-                        <div class="loading-bar">
-                            <div id="loading-bar-fill" class="loading-bar-fill"></div>
-                        </div>
-                    </div>
-                    <div id="loading-percent" class="loading-percent">0%</div>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#" class="nav-logo">
+                <span class="logo-icon">🏰</span>
+                <span class="logo-text">Nexus Tower</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="#about">Tentang</a></li>
+                <li><a href="#features">Fitur</a></li>
+                <li><a href="#controls">Kontrol</a></li>
+                <li><a href="#team">Tim</a></li>
+                <li><a href="game.html" class="btn-play-nav">Main Sekarang</a></li>
+            </ul>
+            <button class="nav-toggle" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-bg"></div>
+        <div class="hero-particles"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <span class="title-icon">⚔️</span>
+                Nexus Tower Defender
+            </h1>
+            <p class="hero-subtitle">Pertahankan Nexus Anda • Hancurkan Base Musuh • Kuasai Arena</p>
+            <p class="hero-description">
+                Game tower defense 2D dengan aksi menembak intensif. Pilih karakter unik, 
+                gunakan berbagai senjata, dan lindungi Nexus Anda dari gelombang musuh yang tak henti-hentinya!
+            </p>
+            <div class="hero-buttons">
+                <a href="game.html" class="btn btn-primary btn-large">
+                    <span class="btn-icon">🎮</span>
+                    Main Sekarang
+                </a>
+                <a href="#about" class="btn btn-secondary btn-large">
+                    <span class="btn-icon">📖</span>
+                    Pelajari Lebih
+                </a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <span class="stat-value">3</span>
+                    <span class="stat-label">Karakter</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">4</span>
+                    <span class="stat-label">Senjata</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">4</span>
+                    <span class="stat-label">Difficulty</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">∞</span>
+                    <span class="stat-label">Level</span>
                 </div>
             </div>
         </div>
-
-        <!-- Main Menu Screen -->
-        <div id="menu-screen" class="screen">
-            <div class="screen-content">
-                <h1 class="game-title">Nexus Tower Defender</h1>
-                <p class="game-subtitle">Defend your Nexus, Destroy Enemy Bases</p>
-
-                <div class="menu-options">
-                    <button id="btn-start" class="btn btn-primary">Start Game</button>
-                    <button id="btn-controls" class="btn btn-secondary">View Controls</button>
-                </div>
-            </div>
+        <div class="scroll-indicator">
+            <span>Scroll ke bawah</span>
+            <div class="scroll-arrow"></div>
         </div>
+    </section>
 
-        <!-- Character Selection Screen -->
-        <div id="character-screen" class="screen">
-            <div class="screen-content character-selection">
-                <h2>Select Your Character</h2>
-
-                <!-- Character Selection -->
-                <div class="character-grid">
-                    <div class="character-card" data-character="pink">
-                        <div class="character-preview" id="preview-pink"></div>
-                        <div class="character-name">Pink Monster</div>
-                    </div>
-                    <div class="character-card" data-character="owlet">
-                        <div class="character-preview" id="preview-owlet"></div>
-                        <div class="character-name">Owlet Monster</div>
-                    </div>
-                    <div class="character-card" data-character="dude">
-                        <div class="character-preview" id="preview-dude"></div>
-                        <div class="character-name">Dude Monster</div>
-                    </div>
-                </div>
-
-                <!-- Difficulty Selection -->
-                <div class="selection-section">
-                    <label for="difficulty">Difficulty:</label>
-                    <select id="difficulty" class="select">
-                        <option value="easy">Easy</option>
-                        <option value="normal" selected>Normal</option>
-                        <option value="hard">Hard</option>
-                        <option value="insane">Insane</option>
-                    </select>
-                </div>
-
-                <!-- Start Button -->
-                <div class="menu-options">
-                    <button id="btn-begin-game" class="btn btn-primary">Begin Game</button>
-                    <button id="btn-back-to-menu" class="btn btn-secondary">Back</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Controls Screen -->
-        <div id="controls-screen" class="screen">
-            <div class="screen-content">
-                <h2>Controls</h2>
-                <div class="controls-grid">
-                    <div class="control-item">
-                        <kbd>W A S D</kbd>
-                        <span>Move Player</span>
-                    </div>
-                    <div class="control-item">
-                        <kbd>SPACE</kbd>
-                        <span>Shoot (towards cursor)</span>
-                    </div>
-                    <div class="control-item">
-                        <kbd>Shift</kbd>
-                        <span>Dash</span>
-                    </div>
-                    <div class="control-item">
-                        <kbd>ESC</kbd>
-                        <span>Pause Game</span>
-                    </div>
-                    <div class="control-item">
-                        <kbd>G</kbd>
-                        <span>Toggle Grid (Debug)</span>
-                    </div>
-                    <div class="control-item">
-                        <kbd>A</kbd>
-                        <span>Toggle Aggro Radius (Debug)</span>
-                    </div>
-                    <div class="control-item">
-                        <kbd>1</kbd>
-                        <span>Rifle</span>
-                    </div>
-                    <div class="control-item">
-                        <kbd>2</kbd>
-                        <span>Sniper</span>
-                    </div>
-                    <div class="control-item">
-                        <kbd>3</kbd>
-                        <span>Shotgun</span>
-                    </div>
-                    <div class="control-item">
-                        <kbd>4</kbd>
-                        <span>SMG</span>
-                    </div>
-                </div>
-                <button id="btn-back-controls" class="btn btn-secondary">Back to Menu</button>
-            </div>
-        </div>
-
-        <!-- Game Screen -->
-        <div id="game-screen" class="screen">
-            <!-- Position Indicator (Minimap) -->
-            <div id="position-indicator" class="position-indicator">
-                <div class="indicator-label">Player Position</div>
-                <div class="indicator-map">
-                    <div id="player-dot" class="player-dot"></div>
-                </div>
-                <div class="indicator-coords">
-                    <span id="player-x">X: 0</span> | <span id="player-y">Y: 0</span>
-                </div>
-            </div>
-
-            <!-- Weapon Guide Card -->
-            <div id="weapon-guide" class="weapon-guide">
-                <div class="weapon-guide-title">Weapons</div>
-                <div class="weapon-guide-current">Current: <span id="weapon-guide-current">Rifle</span></div>
-                <ul class="weapon-guide-list">
-                    <li><span class="hotkey">1</span> Rifle</li>
-                    <li><span class="hotkey">2</span> Sniper</li>
-                    <li><span class="hotkey">3</span> Shotgun</li>
-                    <li><span class="hotkey">4</span> SMG</li>
-                </ul>
-            </div>
-
-            <canvas id="gameCanvas" width="1600" height="900"></canvas>
-
-            <!-- HUD Overlay -->
-            <div id="hud" class="hud">
-                <div class="hud-top-center">
-                    <div class="hud-item">
-                        <span class="hud-label">Level</span>
-                        <span id="hud-level" class="hud-value">1</span>
-                    </div>
-                    <div class="hud-item">
-                        <span class="hud-label">Enemy Bases</span>
-                        <span id="hud-bases" class="hud-value">0</span>
-                    </div>
-                </div>
-
-                <div class="hud-left">
-                    <div class="health-container">
-                        <div class="health-label">Nexus HP</div>
-                        <div class="health-bar-wrapper">
-                            <div class="health-bar">
-                                <div id="nexus-health-fill" class="health-fill nexus"></div>
-                            </div>
-                            <span id="nexus-health-text" class="health-text">200 / 200</span>
-                        </div>
-                    </div>
-
-                    <div class="health-container">
-                        <div class="health-label">Player HP</div>
-                        <div class="health-bar-wrapper">
-                            <div class="health-bar">
-                                <div id="player-health-fill" class="health-fill player"></div>
-                            </div>
-                            <span id="player-health-text" class="health-text">100 / 100</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Pause Screen -->
-        <div id="pause-screen" class="screen overlay">
-            <div class="screen-content">
-                <h2>Game Paused</h2>
-                <div class="menu-options">
-                    <button id="btn-resume" class="btn btn-primary">Resume</button>
-                    <button id="btn-restart" class="btn btn-secondary">Restart Level</button>
-                    <button id="btn-main-menu" class="btn btn-secondary">Main Menu</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Level Up Screen -->
-        <div id="levelup-screen" class="screen overlay">
-            <div class="screen-content">
-                <h2>Level Complete!</h2>
-                <div class="level-stats">
-                    <p class="level-complete-text">Level <span id="completed-level">1</span> Cleared!</p>
-                    <ul class="stats-list">
-                        <li>✓ HP Partially Restored</li>
-                        <li>✓ Max HP Increased</li>
-                        <li>✓ Difficulty Increased</li>
+    <!-- About Section -->
+    <section id="about" class="section about-section">
+        <div class="container">
+            <h2 class="section-title">
+                <span class="title-accent">Tentang</span> Game
+            </h2>
+            <div class="about-content">
+                <div class="about-text">
+                    <h3>Apa itu Nexus Tower Defender?</h3>
+                    <p>
+                        <strong>Nexus Tower Defender</strong> adalah game browser berbasis HTML5 yang menggabungkan 
+                        elemen <em>tower defense</em> klasik dengan gameplay <em>top-down shooter</em> yang dinamis.
+                    </p>
+                    <p>
+                        Dalam game ini, Anda berperan sebagai penjaga Nexus - sebuah struktur vital yang harus 
+                        dilindungi dari serangan musuh. Anda tidak hanya bertahan, tetapi juga menyerang balik 
+                        untuk menghancurkan base-base musuh yang terus mengirimkan pasukan.
+                    </p>
+                    <h3>Tujuan Permainan</h3>
+                    <ul class="feature-list">
+                        <li>🛡️ Lindungi Nexus Anda dari kerusakan</li>
+                        <li>⚔️ Hancurkan semua base musuh di setiap level</li>
+                        <li>📈 Naik level dan tingkatkan kemampuan</li>
+                        <li>🏆 Capai level tertinggi yang Anda bisa!</li>
                     </ul>
                 </div>
-                <button id="btn-continue" class="btn btn-primary">Continue</button>
-            </div>
-        </div>
-
-        <!-- Game Over Screen -->
-        <div id="gameover-screen" class="screen overlay">
-            <div class="screen-content">
-                <h2 class="gameover-title">Game Over</h2>
-                <div class="gameover-stats">
-                    <p class="reached-level">You reached <strong>Level <span id="final-level">1</span></strong></p>
-                    <p id="death-reason" class="death-reason">Your Nexus was destroyed!</p>
-                </div>
-                <div class="menu-options">
-                    <button id="btn-retry" class="btn btn-primary">Try Again</button>
-                    <button id="btn-gameover-menu" class="btn btn-secondary">Main Menu</button>
+                <div class="about-visual">
+                    <div class="game-preview">
+                        <div class="preview-frame">
+                            <div class="preview-content">
+                                <img src="assets/gameplay.png" alt="Nexus Tower Defender Gameplay" class="gameplay-image">
+                            </div>
+                        </div>
+                        <p class="preview-caption">Gameplay Preview</p>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- Load Game Scripts (ES6 Modules) -->
-    <script type="module" src="src/js/main.js"></script>
+    <!-- Features Section -->
+    <section id="features" class="section features-section">
+        <div class="container">
+            <h2 class="section-title">
+                <span class="title-accent">Fitur</span> Utama
+            </h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎭</div>
+                    <h3>3 Karakter Unik</h3>
+                    <p>Pilih dari Pink Monster, Owlet Monster, atau Dude Monster. Setiap karakter memiliki sprite animasi yang berbeda!</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔫</div>
+                    <h3>4 Jenis Senjata</h3>
+                    <p><strong>Rifle</strong> - Seimbang<br><strong>Sniper</strong> - Damage tinggi, jarak jauh<br><strong>Shotgun</strong> - Spread damage<br><strong>SMG</strong> - Fire rate cepat</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💨</div>
+                    <h3>Dash Ability</h3>
+                    <p>Gunakan kemampuan dash untuk menghindari serangan musuh dan bermanuver dengan cepat di arena pertempuran.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🏰</div>
+                    <h3>Nexus Turret</h3>
+                    <p>Nexus Anda bukan hanya target - ia juga membantu melawan musuh dengan tembakan otomatis dan splash damage!</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>4 Tingkat Kesulitan</h3>
+                    <p><strong>Easy</strong> untuk pemula, <strong>Normal</strong> standar, <strong>Hard</strong> untuk tantangan, dan <strong>Insane</strong> untuk master!</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔄</div>
+                    <h3>Progressive Difficulty</h3>
+                    <p>Setiap level, musuh menjadi lebih kuat. HP dan damage Anda juga meningkat untuk mengimbangi!</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Controls Section -->
+    <section id="controls" class="section controls-section">
+        <div class="container">
+            <h2 class="section-title">
+                <span class="title-accent">Cara</span> Bermain
+            </h2>
+            <div class="controls-content">
+                <div class="controls-group">
+                    <h3>🎮 Kontrol Dasar</h3>
+                    <div class="control-items">
+                        <div class="control-item">
+                            <kbd>W A S D</kbd>
+                            <span>Gerak karakter</span>
+                        </div>
+                        <div class="control-item">
+                            <kbd>SPACE / Klik</kbd>
+                            <span>Tembak ke arah cursor</span>
+                        </div>
+                        <div class="control-item">
+                            <kbd>SHIFT</kbd>
+                            <span>Dash ke arah cursor</span>
+                        </div>
+                        <div class="control-item">
+                            <kbd>ESC</kbd>
+                            <span>Pause game</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="controls-group">
+                    <h3>🔫 Hotkey Senjata</h3>
+                    <div class="control-items">
+                        <div class="control-item">
+                            <kbd>1</kbd>
+                            <span>Rifle</span>
+                        </div>
+                        <div class="control-item">
+                            <kbd>2</kbd>
+                            <span>Sniper</span>
+                        </div>
+                        <div class="control-item">
+                            <kbd>3</kbd>
+                            <span>Shotgun</span>
+                        </div>
+                        <div class="control-item">
+                            <kbd>4</kbd>
+                            <span>SMG</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="controls-group">
+                    <h3>🔧 Debug (Opsional)</h3>
+                    <div class="control-items">
+                        <div class="control-item">
+                            <kbd>G</kbd>
+                            <span>Toggle grid</span>
+                        </div>
+                        <div class="control-item">
+                            <kbd>R</kbd>
+                            <span>Toggle range display</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tips-section">
+                <h3>💡 Tips & Strategi</h3>
+                <div class="tips-grid">
+                    <div class="tip-card">
+                        <span class="tip-number">01</span>
+                        <p>Jangan terlalu jauh dari Nexus - musuh bisa menyerangnya saat Anda pergi!</p>
+                    </div>
+                    <div class="tip-card">
+                        <span class="tip-number">02</span>
+                        <p>Gunakan Sniper untuk menghancurkan base dari jarak jauh dengan damage bonus.</p>
+                    </div>
+                    <div class="tip-card">
+                        <span class="tip-number">03</span>
+                        <p>Shotgun efektif melawan kelompok musuh yang berkumpul.</p>
+                    </div>
+                    <div class="tip-card">
+                        <span class="tip-number">04</span>
+                        <p>Dash untuk menghindari proyektil musuh dalam situasi genting!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team Section -->
+    <section id="team" class="section team-section">
+        <div class="container">
+            <h2 class="section-title">
+                <span class="title-accent">Tim</span> Pengembang
+            </h2>
+            <p class="section-description">
+                Game ini dikembangkan sebagai proyek pembelajaran dan demonstrasi kemampuan pengembangan game web.
+            </p>
+            <div class="team-grid">
+                <div class="team-card">
+                    <div class="team-avatar">
+                        <span>🎮</span>
+                    </div>
+                    <h3>Imanuel Putra A.F.</h3>
+                    <p class="team-role">71220927</p>
+                    <p class="team-desc">Game Developer & Project Lead</p>
+                </div>
+                <div class="team-card">
+                    <div class="team-avatar">
+                        <span>👨‍💻</span>
+                    </div>
+                    <h3>Vincen Imanuel</h3>
+                    <p class="team-role">71220856</p>
+                    <p class="team-desc">Backend Developer</p>
+                </div>
+                <div class="team-card">
+                    <div class="team-avatar">
+                        <span>🎨</span>
+                    </div>
+                    <h3>Giovanka Steviano H.P.</h3>
+                    <p class="team-role">71220924</p>
+                    <p class="team-desc">UI/UX Designer</p>
+                </div>
+                <div class="team-card">
+                    <div class="team-avatar">
+                        <span>⚔️</span>
+                    </div>
+                    <h3>Jevon Christian P.F.</h3>
+                    <p class="team-role">71230966</p>
+                    <p class="team-desc">Gameplay Programmer</p>
+                </div>
+                <div class="team-card">
+                    <div class="team-avatar">
+                        <span>🖼️</span>
+                    </div>
+                    <h3>Galih Pramana C.P.</h3>
+                    <p class="team-role">71230976</p>
+                    <p class="team-desc">Asset Provider</p>
+                </div>
+                <div class="team-card">
+                    <div class="team-avatar">
+                        <span>🚀</span>
+                    </div>
+                    <h3>Michael Chandra M.</h3>
+                    <p class="team-role">71231058</p>
+                    <p class="team-desc">Quality Assurance</p>
+                </div>
+            </div>
+            <div class="project-info">
+                <h3>📚 Informasi Proyek</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Teknologi</span>
+                        <span class="info-value">HTML5, CSS3, JavaScript (ES6+)</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Rendering</span>
+                        <span class="info-value">Canvas 2D API</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Assets</span>
+                        <span class="info-value">Pixel Art Sprites</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Platform</span>
+                        <span class="info-value">Web Browser (Desktop/Mobile)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="section cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Siap Untuk Bertarung?</h2>
+                <p>Mulai pertahankan Nexus Anda sekarang dan buktikan kemampuan Anda!</p>
+                <a href="game.html" class="btn btn-primary btn-large btn-glow">
+                    <span class="btn-icon">🚀</span>
+                    Mulai Bermain
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <span class="logo-icon">🏰</span>
+                    <span class="logo-text">Nexus Tower Defender</span>
+                </div>
+                <p class="footer-text">
+                    © 2024 Nexus Tower Defender. Dibuat dengan ❤️ untuk pembelajaran.
+                </p>
+                <div class="footer-links">
+                    <a href="game.html">Main Game</a>
+                    <a href="#about">Tentang</a>
+                    <a href="#team">Tim</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Mobile Nav Script -->
+    <script>
+        const navToggle = document.querySelector('.nav-toggle');
+        const navLinks = document.querySelector('.nav-links');
+
+        navToggle.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+            navToggle.classList.toggle('active');
+        });
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                    navLinks.classList.remove('active');
+                    navToggle.classList.remove('active');
+                }
+            });
+        });
+
+        // Navbar scroll effect
+        window.addEventListener('scroll', () => {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+    </script>
 </body>
 </html>
