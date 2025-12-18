@@ -113,10 +113,39 @@
                     <div class="game-preview">
                         <div class="preview-frame">
                             <div class="preview-content">
-                                <img src="assets/gameplay.png" alt="Nexus Tower Defender Gameplay" class="gameplay-image">
+                                <div class="gameplay-carousel">
+                                    <div class="carousel-slides">
+                                        <img src="assets/gameplay.png" alt="Gameplay 1" class="carousel-slide active" data-index="0">
+                                        <img src="assets/gameplay2.png" alt="Gameplay 2" class="carousel-slide" data-index="1">
+                                        <img src="assets/gameplay3.png" alt="Gameplay 3" class="carousel-slide" data-index="2">
+                                    </div>
+                                    <button class="carousel-btn carousel-prev" aria-label="Previous">❮</button>
+                                    <button class="carousel-btn carousel-next" aria-label="Next">❯</button>
+                                    <div class="carousel-indicators">
+                                        <span class="indicator active" data-index="0"></span>
+                                        <span class="indicator" data-index="1"></span>
+                                        <span class="indicator" data-index="2"></span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <p class="preview-caption">Gameplay Preview</p>
+                        <p class="preview-caption">Gameplay Preview - Klik untuk memperbesar</p>
+                    </div>
+                </div>
+                
+                <!-- Lightbox Modal -->
+                <div class="lightbox-overlay" id="lightboxOverlay">
+                    <div class="lightbox-content">
+                        <button class="lightbox-close" aria-label="Close">&times;</button>
+                        <img src="" alt="Enlarged Gameplay" class="lightbox-image" id="lightboxImage">
+                        <button class="lightbox-btn lightbox-prev" aria-label="Previous">❮</button>
+                        <button class="lightbox-btn lightbox-next" aria-label="Next">❯</button>
+                        <div class="lightbox-indicators">
+                            <span class="lightbox-indicator active" data-index="0"></span>
+                            <span class="lightbox-indicator" data-index="1"></span>
+                            <span class="lightbox-indicator" data-index="2"></span>
+                        </div>
+                        <p class="lightbox-caption">Gameplay Preview</p>
                     </div>
                 </div>
             </div>
@@ -261,54 +290,48 @@
                 Game ini dikembangkan sebagai proyek pembelajaran dan demonstrasi kemampuan pengembangan game web.
             </p>
             <div class="team-grid">
-                <div class="team-card">
+                <a href="https://github.com/Im-A-Nuel" target="_blank" class="team-card">
                     <div class="team-avatar">
-                        <span>🎮</span>
+                        <img src="https://github.com/Im-A-Nuel.png" alt="Imanuel Putra A.F.">
                     </div>
                     <h3>Imanuel Putra A.F.</h3>
                     <p class="team-role">71220927</p>
-                    <p class="team-desc">Game Developer & Project Lead</p>
-                </div>
-                <div class="team-card">
+                </a>
+                <a href="https://github.com/VincenImanuell" target="_blank" class="team-card">
                     <div class="team-avatar">
-                        <span>👨‍💻</span>
+                        <img src="https://github.com/VincenImanuell.png" alt="Vincen Imanuel">
                     </div>
                     <h3>Vincen Imanuel</h3>
                     <p class="team-role">71220856</p>
-                    <p class="team-desc">Backend Developer</p>
-                </div>
-                <div class="team-card">
+                </a>
+                <a href="https://github.com/Gio71220924" target="_blank" class="team-card">
                     <div class="team-avatar">
-                        <span>🎨</span>
+                        <img src="https://github.com/Gio71220924.png" alt="Giovanka Steviano H.P.">
                     </div>
                     <h3>Giovanka Steviano H.P.</h3>
                     <p class="team-role">71220924</p>
-                    <p class="team-desc">UI/UX Designer</p>
-                </div>
-                <div class="team-card">
+                </a>
+                <a href="https://github.com/JevonFunay" target="_blank" class="team-card">
                     <div class="team-avatar">
-                        <span>⚔️</span>
+                        <img src="https://github.com/JevonFunay.png" alt="Jevon Christian P.F.">
                     </div>
                     <h3>Jevon Christian P.F.</h3>
                     <p class="team-role">71230966</p>
-                    <p class="team-desc">Gameplay Programmer</p>
-                </div>
-                <div class="team-card">
+                </a>
+                <a href="https://github.com/GalihPramana" target="_blank" class="team-card">
                     <div class="team-avatar">
-                        <span>🖼️</span>
+                        <img src="https://github.com/GalihPramana.png" alt="Galih Pramana C.P.">
                     </div>
                     <h3>Galih Pramana C.P.</h3>
                     <p class="team-role">71230976</p>
-                    <p class="team-desc">Asset Provider</p>
-                </div>
-                <div class="team-card">
+                </a>
+                <a href="https://github.com/Tohrubo" target="_blank" class="team-card">
                     <div class="team-avatar">
-                        <span>🚀</span>
+                        <img src="https://github.com/Tohrubo.png" alt="Michael Chandra M.">
                     </div>
                     <h3>Michael Chandra M.</h3>
                     <p class="team-role">71231058</p>
-                    <p class="team-desc">Quality Assurance</p>
-                </div>
+                </a>
             </div>
             <div class="project-info">
                 <h3>📚 Informasi Proyek</h3>
@@ -357,7 +380,7 @@
                     <span class="logo-text">Nexus Tower Defender</span>
                 </div>
                 <p class="footer-text">
-                    © 2024 Nexus Tower Defender. Dibuat dengan ❤️ untuk pembelajaran.
+                    © 2025 Nexus Tower Defender. Dibuat dengan ❤️ untuk pembelajaran.
                 </p>
                 <div class="footer-links">
                     <a href="game.html">Main Game</a>
@@ -409,6 +432,106 @@
                 navbar.classList.add('scrolled');
             } else {
                 navbar.classList.remove('scrolled');
+            }
+        });
+
+        // ===== Gameplay Carousel =====
+        const carouselSlides = document.querySelectorAll('.carousel-slide');
+        const carouselIndicators = document.querySelectorAll('.carousel-indicators .indicator');
+        const prevBtn = document.querySelector('.carousel-prev');
+        const nextBtn = document.querySelector('.carousel-next');
+        let currentSlide = 0;
+        let autoSlideInterval;
+        const slideInterval = 4000;
+
+        function updateCarousel(index) {
+            carouselSlides.forEach((slide, i) => {
+                slide.classList.toggle('active', i === index);
+            });
+            carouselIndicators.forEach((indicator, i) => {
+                indicator.classList.toggle('active', i === index);
+            });
+            currentSlide = index;
+        }
+
+        function nextSlide() {
+            updateCarousel((currentSlide + 1) % carouselSlides.length);
+        }
+
+        function prevSlide() {
+            updateCarousel((currentSlide - 1 + carouselSlides.length) % carouselSlides.length);
+        }
+
+        function startAutoSlide() {
+            autoSlideInterval = setInterval(nextSlide, slideInterval);
+        }
+
+        function resetAutoSlide() {
+            clearInterval(autoSlideInterval);
+            startAutoSlide();
+        }
+
+        nextBtn.addEventListener('click', () => { nextSlide(); resetAutoSlide(); });
+        prevBtn.addEventListener('click', () => { prevSlide(); resetAutoSlide(); });
+        carouselIndicators.forEach(indicator => {
+            indicator.addEventListener('click', () => {
+                updateCarousel(parseInt(indicator.dataset.index));
+                resetAutoSlide();
+            });
+        });
+        startAutoSlide();
+
+        // ===== Lightbox Modal =====
+        const lightboxOverlay = document.getElementById('lightboxOverlay');
+        const lightboxImage = document.getElementById('lightboxImage');
+        const lightboxClose = document.querySelector('.lightbox-close');
+        const lightboxPrev = document.querySelector('.lightbox-prev');
+        const lightboxNext = document.querySelector('.lightbox-next');
+        const lightboxIndicators = document.querySelectorAll('.lightbox-indicator');
+        const lightboxCaption = document.querySelector('.lightbox-caption');
+        const gameplayImages = [
+            { src: 'assets/gameplay.png', caption: 'Gameplay Preview 1' },
+            { src: 'assets/gameplay2.png', caption: 'Gameplay Preview 2' },
+            { src: 'assets/gameplay3.png', caption: 'Gameplay Preview 3' }
+        ];
+        let lightboxIndex = 0;
+
+        function updateLightbox(index) {
+            lightboxIndex = index;
+            lightboxImage.src = gameplayImages[index].src;
+            lightboxCaption.textContent = gameplayImages[index].caption;
+            lightboxIndicators.forEach((ind, i) => ind.classList.toggle('active', i === index));
+        }
+
+        function openLightbox(index) {
+            updateLightbox(index);
+            lightboxOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            clearInterval(autoSlideInterval);
+        }
+
+        function closeLightbox() {
+            lightboxOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+            startAutoSlide();
+        }
+
+        carouselSlides.forEach(slide => {
+            slide.addEventListener('click', () => openLightbox(parseInt(slide.dataset.index)));
+        });
+
+        lightboxNext.addEventListener('click', () => updateLightbox((lightboxIndex + 1) % gameplayImages.length));
+        lightboxPrev.addEventListener('click', () => updateLightbox((lightboxIndex - 1 + gameplayImages.length) % gameplayImages.length));
+        lightboxIndicators.forEach(ind => {
+            ind.addEventListener('click', () => updateLightbox(parseInt(ind.dataset.index)));
+        });
+        lightboxClose.addEventListener('click', closeLightbox);
+        lightboxOverlay.addEventListener('click', (e) => { if (e.target === lightboxOverlay) closeLightbox(); });
+        document.addEventListener('keydown', (e) => {
+            if (lightboxOverlay.classList.contains('active')) {
+                if (e.key === 'Escape') closeLightbox();
+                if (e.key === 'ArrowRight') updateLightbox((lightboxIndex + 1) % gameplayImages.length);
+                if (e.key === 'ArrowLeft') updateLightbox((lightboxIndex - 1 + gameplayImages.length) % gameplayImages.length);
             }
         });
     </script>
